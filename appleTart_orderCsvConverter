@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注文データCSV変換ツール</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Meiryo, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f1f5;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-name {
+            margin-top: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .convert-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .convert-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .convert-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            color: white;
+            display: none;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .info-box p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .result-table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .date-mapping-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+        }
+
+        .date-input-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .date-input-label {
+            flex: 1;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .date-input-field {
+            padding: 8px 12px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 150px;
+        }
+
+        .date-input-field:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍎 注文データCSV変換ツール</h1>
+            <p>りんごのプリンタルト[ギフトBOX]（冷凍）の注文データを管理シート形式に変換</p>
+        </div>
+
+        <div class="content">
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <input type="file" id="csvFile" accept=".csv">
+                    <label for="csvFile" class="file-input-label">📁 CSVファイルを選択</label>
+                </div>
+                <div class="file-name" id="fileName">ファイルが選択されていません</div>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="button-group">
+                <button class="convert-btn" id="convertBtn" disabled>🔄 変換</button>
+                <button class="copy-btn" id="copyBtn">📋 クリップボードにコピー</button>
+            </div>
+
+            <div class="date-mapping-section" id="dateMappingSection" style="display: none;">
+                <div class="info-box">
+                    <h3>⚠️ 商品必着日の確認が必要です</h3>
+                    <p>以下のバリエーションは日付形式に変換できません。実際の商品必着日（YYYY/MM/DD形式）を入力してください。</p>
+                </div>
+                <div id="dateMappingInputs"></div>
+                <div class="button-group">
+                    <button class="convert-btn" id="confirmDateBtn">✅ 日付を確定して変換完了</button>
+                </div>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <div class="info-box">
+                    <h3>✅ 変換完了</h3>
+                    <p>以下のデータをGoogleスプレッドシートに貼り付けてください。「クリップボードにコピー」ボタンでコピーできます。</p>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalRows">0</div>
+                        <div class="stat-label">変換行数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalQuantity">0</div>
+                        <div class="stat-label">合計数量</div>
+                    </div>
+                </div>
+
+                <div class="result-table-wrapper">
+                    <table id="resultTable">
+                        <thead>
+                            <tr>
+                                <th>受注日</th>
+                                <th>チャネル</th>
+                                <th>商品コード</th>
+                                <th>商品名</th>
+                                <th>引受No.</th>
+                                <th>数量</th>
+                                <th>商品必着日</th>
+                                <th>加工備考</th>
+                                <th>依頼主</th>
+                                <th>お届け先</th>
+                                <th>〒</th>
+                                <th>住所</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let convertedData = [];
+        let dateMapping = {}; // 日付変換できないバリエーションのマッピング
+        let unconvertedDates = new Set(); // 変換できない日付のリスト
+
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('convertBtn').disabled = false;
+                document.getElementById('errorMessage').style.display = 'none';
+            }
+        });
+
+        document.getElementById('convertBtn').addEventListener('click', function() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showError('ファイルを選択してください。');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvText = e.target.result;
+                    processCSV(csvText);
+                } catch (error) {
+                    showError('CSVファイルの読み込みに失敗しました: ' + error.message);
+                }
+            };
+            reader.readAsText(file, 'Shift_JIS');
+        });
+
+        function processCSV(csvText) {
+            const lines = csvText.split('\n');
+            const headers = parseCSVLine(lines[0]);
+            
+            // 列のインデックスを取得
+            const colIndexes = {
+                orderDate: headers.indexOf('注文日時'),
+                productCode: headers.indexOf('種類ID'),
+                productName: headers.indexOf('商品名'),
+                orderId: headers.indexOf('注文ID'),
+                quantity: headers.indexOf('数量'),
+                variation: headers.indexOf('バリエーション'),
+                remarks: headers.indexOf('備考'),
+                lastNameBill: headers.indexOf('氏(請求先)'),
+                firstNameBill: headers.indexOf('名(請求先)'),
+                lastNameShip: headers.indexOf('氏(配送先)'),
+                firstNameShip: headers.indexOf('名(配送先)'),
+                postalCodeShip: headers.indexOf('郵便番号(配送先)'),
+                prefectureShip: headers.indexOf('都道府県(配送先)')
+            };
+
+            // 必要な列が存在するか確認
+            for (let key in colIndexes) {
+                if (colIndexes[key] === -1) {
+                    showError(`必要な列が見つかりません: ${key}`);
+                    return;
+                }
+            }
+
+            convertedData = [];
+            let totalQuantity = 0;
+
+            // データ行を処理
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+
+                const row = parseCSVLine(lines[i]);
+                const productName = row[colIndexes.productName];
+
+                // 「りんごのプリンタルト[ギフトBOX]（冷凍）」のみ処理
+                if (productName && productName.includes('りんごのプリンタルト[ギフトBOX]（冷凍）')) {
+                    const orderDateTime = row[colIndexes.orderDate] || '';
+                    const orderDate = formatDate(orderDateTime);
+                    const variationText = row[colIndexes.variation] || '';
+                    const deliveryDate = formatDate(variationText);
+                    
+                    // 日付変換できなかった場合は記録
+                    if (variationText && deliveryDate === variationText) {
+                        unconvertedDates.add(variationText);
+                    }
+                    
+                    const lastNameBill = row[colIndexes.lastNameBill] || '';
+                    const firstNameBill = row[colIndexes.firstNameBill] || '';
+                    const lastNameShip = row[colIndexes.lastNameShip] || '';
+                    const firstNameShip = row[colIndexes.firstNameShip] || '';
+                    const quantity = parseInt(row[colIndexes.quantity]) || 0;
+
+                    const requester = `${lastNameBill} ${firstNameBill}`.trim();
+                    const recipient = `${lastNameShip} ${firstNameShip}`.trim();
+                    
+                    // 依頼主とお届け先が同一の場合は依頼主を空欄に
+                    const finalRequester = (requester === recipient) ? '' : requester;
+
+                    const convertedRow = {
+                        orderDate: orderDate, // 列C
+                        channel: '自社EC', // 列D
+                        productCode: row[colIndexes.productCode] || '', // 列E
+                        productName: productName, // 列F
+                        trackingNo: row[colIndexes.orderId] || '', // 列G
+                        colH: '', // 列H（空欄）
+                        colI: '', // 列I（空欄）
+                        quantity: quantity, // 列J
+                        deliveryDate: deliveryDate, // 列K
+                        variationText: variationText, // 元のバリエーションテキスト（ソート・表示用）
+                        remarks: row[colIndexes.remarks] || '', // 列L
+                        colM: '', // 列M（空欄）
+                        colN: '', // 列N（空欄）
+                        requester: finalRequester, // 列O（依頼主）
+                        recipient: recipient, // 列P（お届け先）
+                        postalCode: row[colIndexes.postalCodeShip] || '', // 列Q
+                        address: row[colIndexes.prefectureShip] || '', // 列R
+                        orderDateTime: orderDateTime // ソート用の元の注文日時
+                    };
+
+                    convertedData.push(convertedRow);
+                    totalQuantity += quantity;
+                }
+            }
+
+            if (convertedData.length === 0) {
+                showError('対象商品「りんごのプリンタルト[ギフトBOX]（冷凍）」のデータが見つかりませんでした。');
+                return;
+            }
+
+            // 変換できない日付がある場合は日付マッピングUIを表示
+            if (unconvertedDates.size > 0) {
+                showDateMappingUI(totalQuantity);
+            } else {
+                // 変換できない日付がない場合は直接ソート・表示
+                sortAndDisplayResults(totalQuantity);
+            }
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            
+            // YYYY/MM/DD HH:mm:ss 形式から YYYY/MM/DD を抽出
+            let match = dateString.match(/(\d{4})\/(\d{2})\/(\d{2})/);
+            if (match) {
+                return `${match[1]}/${match[2]}/${match[3]}`;
+            }
+            
+            // YYYY年MM月DD日 形式から YYYY/MM/DD を抽出
+            match = dateString.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+            if (match) {
+                const year = match[1];
+                const month = match[2].padStart(2, '0');
+                const day = match[3].padStart(2, '0');
+                return `${year}/${month}/${day}`;
+            }
+            
+            return dateString;
+        }
+
+        function showDateMappingUI(totalQuantity) {
+            const dateMappingSection = document.getElementById('dateMappingSection');
+            const dateMappingInputs = document.getElementById('dateMappingInputs');
+            dateMappingInputs.innerHTML = '';
+
+            // 変換できない日付ごとに入力フィールドを生成
+            unconvertedDates.forEach(dateText => {
+                const row = document.createElement('div');
+                row.className = 'date-input-row';
+                
+                const label = document.createElement('div');
+                label.className = 'date-input-label';
+                label.textContent = `「${dateText}」→ `;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'date-input-field';
+                input.placeholder = 'YYYY/MM/DD';
+                input.dataset.originalText = dateText;
+                
+                row.appendChild(label);
+                row.appendChild(input);
+                dateMappingInputs.appendChild(row);
+            });
+
+            dateMappingSection.style.display = 'block';
+            
+            // 確定ボタンのイベントリスナー
+            document.getElementById('confirmDateBtn').onclick = function() {
+                const inputs = dateMappingInputs.querySelectorAll('.date-input-field');
+                let allValid = true;
+                
+                inputs.forEach(input => {
+                    const originalText = input.dataset.originalText;
+                    const newDate = input.value.trim();
+                    
+                    // 日付形式のバリデーション
+                    if (!newDate.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+                        allValid = false;
+                        input.style.borderColor = '#dc3545';
+                    } else {
+                        input.style.borderColor = '#667eea';
+                        dateMapping[originalText] = newDate;
+                    }
+                });
+                
+                if (!allValid) {
+                    showError('すべての日付をYYYY/MM/DD形式で入力してください。');
+                    return;
+                }
+                
+                // 日付マッピングを適用
+                convertedData.forEach(row => {
+                    if (dateMapping[row.variationText]) {
+                        row.deliveryDate = dateMapping[row.variationText];
+                    }
+                });
+                
+                dateMappingSection.style.display = 'none';
+                sortAndDisplayResults(totalQuantity);
+            };
+        }
+
+        function sortAndDisplayResults(totalQuantity) {
+            // 受注日時の早い順でソート
+            convertedData.sort((a, b) => {
+                return new Date(a.orderDateTime) - new Date(b.orderDateTime);
+            });
+            
+            displayResults(totalQuantity);
+        }
+
+        function displayResults(totalQuantity) {
+            const tbody = document.getElementById('resultBody');
+            tbody.innerHTML = '';
+
+            convertedData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.orderDate}</td>
+                    <td>${row.channel}</td>
+                    <td>${row.productCode}</td>
+                    <td>${row.productName}</td>
+                    <td>${row.trackingNo}</td>
+                    <td>${row.quantity}</td>
+                    <td>${row.deliveryDate}</td>
+                    <td>${row.remarks}</td>
+                    <td>${row.requester}</td>
+                    <td>${row.recipient}</td>
+                    <td>${row.postalCode}</td>
+                    <td>${row.address}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('totalRows').textContent = convertedData.length;
+            document.getElementById('totalQuantity').textContent = totalQuantity;
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('copyBtn').style.display = 'inline-block';
+        }
+
+        document.getElementById('copyBtn').addEventListener('click', function() {
+            const tsvData = convertToTSV();
+            
+            navigator.clipboard.writeText(tsvData).then(() => {
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ コピーしました！';
+                btn.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#28a745';
+                }, 2000);
+            }).catch(err => {
+                showError('クリップボードへのコピーに失敗しました。');
+            });
+        });
+
+        function convertToTSV() {
+            let tsv = '';
+            convertedData.forEach(row => {
+                tsv += [
+                    row.orderDate,        // 列C
+                    row.channel,          // 列D
+                    row.productCode,      // 列E
+                    row.productName,      // 列F
+                    row.trackingNo,       // 列G
+                    row.colH,             // 列H（空欄）
+                    row.colI,             // 列I（空欄）
+                    row.quantity,         // 列J
+                    row.deliveryDate,     // 列K
+                    row.remarks,          // 列L
+                    row.colM,             // 列M（空欄）
+                    row.colN,             // 列N（空欄）
+                    row.requester,        // 列O
+                    row.recipient,        // 列P
+                    row.postalCode,       // 列Q
+                    row.address           // 列R
+                ].join('\t') + '\n';
+            });
+            return tsv;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('copyBtn').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
