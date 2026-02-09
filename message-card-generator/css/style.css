@@ -122,6 +122,62 @@ textarea:focus {
     transform: scale(0.95);
 }
 
+/* 文字色コントロール */
+.color-controls {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.color-controls label {
+    display: block;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.color-picker-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#colorPicker {
+    width: 60px;
+    height: 40px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 2px;
+}
+
+#colorPicker:hover {
+    border-color: #c9a961;
+}
+
+.btn-reset-color {
+    flex: 1;
+    padding: 8px 15px;
+    font-size: 13px;
+    font-weight: bold;
+    border: 2px solid #ddd;
+    background: white;
+    color: #666;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-reset-color:hover {
+    border-color: #c9a961;
+    background: #fafafa;
+}
+
+.btn-reset-color:active {
+    transform: scale(0.95);
+}
+
 /* ========================================
    プレビューセクション
    ======================================== */
@@ -165,14 +221,14 @@ textarea:focus {
     text-align: center;
     font-size: 32px;
     font-family: "tsukushi-a-round-gothic", "貂明朝テキスト", "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "HG明朝E", "MS P明朝", "MS PMincho", serif;
-    color: #333;
+    color: #3C2618;
     line-height: 1.8;
     white-space: pre-wrap;
     word-wrap: break-word;
     font-weight: 500;
     z-index: 10;
     padding: 40px 20px 80px 20px; /* 下部のロゴエリアを避ける */
-    transition: font-size 0.3s ease;
+    transition: font-size 0.3s ease, color 0.3s ease;
 }
 
 /* フォントサイズバリエーション */

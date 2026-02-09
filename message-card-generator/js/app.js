@@ -12,9 +12,15 @@ const generateBtn = document.getElementById('generateBtn');
 const clearBtn = document.getElementById('clearBtn');
 const loading = document.getElementById('loading');
 const sizeButtons = document.querySelectorAll('.btn-size');
+const colorPicker = document.getElementById('colorPicker');
+const resetColorBtn = document.getElementById('resetColorBtn');
 
 // 現在のフォントサイズ（デフォルトは中）
 let currentSize = 'medium';
+
+// デフォルトの文字色
+const DEFAULT_COLOR = '#3C2618';
+let currentColor = DEFAULT_COLOR;
 
 // ========================================
 // リアルタイムプレビュー
@@ -46,6 +52,26 @@ sizeButtons.forEach(button => {
         // cardMessageのクラスを更新
         cardMessage.className = `size-${currentSize}`;
     });
+});
+
+// ========================================
+// 文字色変更
+// ========================================
+/**
+ * カラーピッカーのイベントリスナー
+ */
+colorPicker.addEventListener('input', function() {
+    currentColor = this.value;
+    cardMessage.style.color = currentColor;
+});
+
+/**
+ * デフォルト色に戻すボタンのイベントリスナー
+ */
+resetColorBtn.addEventListener('click', function() {
+    currentColor = DEFAULT_COLOR;
+    colorPicker.value = DEFAULT_COLOR;
+    cardMessage.style.color = DEFAULT_COLOR;
 });
 
 // ========================================
@@ -156,4 +182,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // デフォルトのフォントサイズクラスを設定
     cardMessage.classList.add('size-medium');
+    
+    // デフォルトの文字色を設定
+    cardMessage.style.color = DEFAULT_COLOR;
+    colorPicker.value = DEFAULT_COLOR;
 });
