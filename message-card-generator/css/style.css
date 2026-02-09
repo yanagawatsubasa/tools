@@ -335,6 +335,37 @@ button:active {
     color: #d97706;
 }
 
+.print-settings {
+    background: #e8f5e9;
+    border: 2px solid #4caf50;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.print-settings h4 {
+    color: #2e7d32;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.print-settings ul {
+    margin-left: 20px;
+    color: #555;
+    line-height: 1.8;
+}
+
+.print-settings strong {
+    color: #1b5e20;
+}
+
+.print-settings .note {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #666;
+    font-style: italic;
+}
+
 /* ========================================
    ローディング表示
    ======================================== */
