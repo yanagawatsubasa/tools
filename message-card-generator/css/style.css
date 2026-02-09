@@ -116,6 +116,7 @@ textarea:focus {
     width: 80%;
     text-align: center;
     font-size: 32px;
+    font-family: "tsukushi-a-round-gothic", "貂明朝テキスト", "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "HG明朝E", "MS P明朝", "MS PMincho", serif;
     color: #333;
     line-height: 1.8;
     white-space: pre-wrap;
