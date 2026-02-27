@@ -327,6 +327,7 @@
                             <tr>
                                 <th>受注日</th>
                                 <th>チャネル</th>
+                                <th>出荷元</th>
                                 <th>商品コード</th>
                                 <th>商品名</th>
                                 <th>引受No.</th>
@@ -448,21 +449,22 @@
                     const convertedRow = {
                         orderDate: orderDate, // 列C
                         channel: '自社EC', // 列D
-                        productCode: row[colIndexes.productCode] || '', // 列E
-                        productName: productName, // 列F
-                        trackingNo: row[colIndexes.orderId] || '', // 列G
-                        colH: '', // 列H（空欄）
+                        shippingSource: 'bud', // 列E（出荷元）
+                        productCode: row[colIndexes.productCode] || '', // 列F
+                        productName: productName, // 列G
+                        trackingNo: row[colIndexes.orderId] || '', // 列H
                         colI: '', // 列I（空欄）
-                        quantity: quantity, // 列J
-                        deliveryDate: deliveryDate, // 列K
+                        colJ: '', // 列J（空欄）
+                        quantity: quantity, // 列K
+                        deliveryDate: deliveryDate, // 列L
                         variationText: variationText, // 元のバリエーションテキスト（ソート・表示用）
-                        remarks: row[colIndexes.remarks] || '', // 列L
-                        colM: '', // 列M（空欄）
+                        remarks: row[colIndexes.remarks] || '', // 列M
                         colN: '', // 列N（空欄）
-                        requester: finalRequester, // 列O（依頼主）
-                        recipient: recipient, // 列P（お届け先）
-                        postalCode: row[colIndexes.postalCodeShip] || '', // 列Q
-                        address: row[colIndexes.prefectureShip] || '', // 列R
+                        colO: '', // 列O（空欄）
+                        requester: finalRequester, // 列P（依頼主）
+                        recipient: recipient, // 列Q（お届け先）
+                        postalCode: row[colIndexes.postalCodeShip] || '', // 列R
+                        address: row[colIndexes.prefectureShip] || '', // 列S
                         orderDateTime: orderDateTime // ソート用の元の注文日時
                     };
 
@@ -619,6 +621,7 @@
                 tr.innerHTML = `
                     <td>${row.orderDate}</td>
                     <td>${row.channel}</td>
+                    <td>${row.shippingSource}</td>
                     <td>${row.productCode}</td>
                     <td>${row.productName}</td>
                     <td>${row.trackingNo}</td>
@@ -663,20 +666,21 @@
                 tsv += [
                     row.orderDate,        // 列C
                     row.channel,          // 列D
-                    row.productCode,      // 列E
-                    row.productName,      // 列F
-                    row.trackingNo,       // 列G
-                    row.colH,             // 列H（空欄）
+                    row.shippingSource,   // 列E（出荷元）
+                    row.productCode,      // 列F
+                    row.productName,      // 列G
+                    row.trackingNo,       // 列H
                     row.colI,             // 列I（空欄）
-                    row.quantity,         // 列J
-                    row.deliveryDate,     // 列K
-                    row.remarks,          // 列L
-                    row.colM,             // 列M（空欄）
+                    row.colJ,             // 列J（空欄）
+                    row.quantity,         // 列K
+                    row.deliveryDate,     // 列L
+                    row.remarks,          // 列M
                     row.colN,             // 列N（空欄）
-                    row.requester,        // 列O
-                    row.recipient,        // 列P
-                    row.postalCode,       // 列Q
-                    row.address           // 列R
+                    row.colO,             // 列O（空欄）
+                    row.requester,        // 列P
+                    row.recipient,        // 列Q
+                    row.postalCode,       // 列R
+                    row.address           // 列S
                 ].join('\t') + '\n';
             });
             return tsv;
