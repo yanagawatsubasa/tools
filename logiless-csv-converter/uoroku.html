@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ウオロクギフト LOGILESS取込用CSV変換ツール</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/encoding-japanese/2.0.0/encoding.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f5f5f5;
+    color: #222;
+    line-height: 1.6;
+  }
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  header {
+    border-bottom: 2px solid #222;
+    padding-bottom: 16px;
+    margin-bottom: 32px;
+  }
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #666;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    margin: 0 0 16px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+  }
+  .step-num {
+    display: inline-block;
+    background: #222;
+    color: #fff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 11px;
+    line-height: 20px;
+    margin-right: 8px;
+    font-weight: 700;
+  }
+  .drop-zone {
+    border: 2px dashed #bbb;
+    border-radius: 4px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fafafa;
+  }
+  .drop-zone:hover {
+    border-color: #555;
+    background: #f0f0f0;
+  }
+  .drop-zone.dragover {
+    border-color: #2563eb;
+    background: #eff6ff;
+  }
+  .drop-zone p {
+    margin: 8px 0;
+    color: #666;
+  }
+  .drop-zone .main-text {
+    font-size: 15px;
+    color: #222;
+    font-weight: 600;
+  }
+  .drop-zone .sub-text {
+    font-size: 12px;
+    color: #888;
+  }
+  input[type="file"] {
+    display: none;
+  }
+  .file-info {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: 13px;
+    display: none;
+  }
+  .file-info.show {
+    display: block;
+  }
+  .file-info strong {
+    color: #166534;
+  }
+  button {
+    background: #222;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+  button:hover:not(:disabled) {
+    background: #000;
+  }
+  button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  button.secondary {
+    background: #fff;
+    color: #222;
+    border: 1px solid #222;
+  }
+  button.secondary:hover:not(:disabled) {
+    background: #f5f5f5;
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .stat {
+    background: #fafafa;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 24px;
+    font-weight: 700;
+    color: #222;
+    line-height: 1.2;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: #666;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .error-box {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+  }
+  .error-box.show {
+    display: block;
+  }
+  .preview-table {
+    margin-top: 16px;
+    overflow-x: auto;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px;
+  }
+  th, td {
+    border-bottom: 1px solid #eee;
+    padding: 6px 10px;
+    text-align: left;
+    white-space: nowrap;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #444;
+    position: sticky;
+    top: 0;
+    border-bottom: 2px solid #ddd;
+  }
+  tr:hover td {
+    background: #f9fafb;
+  }
+  .info-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+  }
+  details {
+    margin-top: 16px;
+  }
+  summary {
+    cursor: pointer;
+    font-size: 13px;
+    color: #2563eb;
+    user-select: none;
+  }
+  summary:hover {
+    text-decoration: underline;
+  }
+  .spec-list {
+    background: #fafafa;
+    border-left: 3px solid #ddd;
+    padding: 12px 16px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #555;
+  }
+  .spec-list dt {
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  .spec-list dt:first-child {
+    margin-top: 0;
+  }
+  .spec-list dd {
+    margin: 2px 0 0 12px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>ウオロクギフト LOGILESS取込用CSV変換ツール</h1>
+  <p class="subtitle">出荷状況データCSVをLOGILESS取込用CSVに変換します</p>
+</header>
+
+<!-- Step 1: アップロード -->
+<div class="card">
+  <h2><span class="step-num">1</span>元データCSVを選択</h2>
+  <div class="drop-zone" id="dropZone">
+    <p class="main-text">ファイルをドラッグ&ドロップ</p>
+    <p class="sub-text">または、クリックしてファイルを選択</p>
+    <p class="sub-text">（出荷状況データCSV / Shift-JIS）</p>
+  </div>
+  <input type="file" id="fileInput" accept=".csv">
+  <div class="file-info" id="fileInfo"></div>
+  <div class="error-box" id="errorBox"></div>
+</div>
+
+<!-- Step 2: 変換実行 -->
+<div class="card">
+  <h2><span class="step-num">2</span>変換 & ダウンロード</h2>
+  <div class="actions">
+    <button id="convertBtn" disabled>変換を実行</button>
+    <button id="downloadBtn" class="secondary" disabled>LOGILESS取込用CSVをダウンロード</button>
+  </div>
+  <p class="info-text">出力ファイル名: <code>uoroku_LOGILESS取込_YYYYMMDD-HHMM.csv</code>（UTF-8 BOM付き）</p>
+
+  <div class="stats" id="stats" style="display:none">
+    <div class="stat">
+      <div class="stat-num" id="statSource">0</div>
+      <div class="stat-label">元データ行数</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="statUketsuke">0</div>
+      <div class="stat-label">受付番号数</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="statOutput">0</div>
+      <div class="stat-label">出力行数</div>
+    </div>
+  </div>
+</div>
+
+<!-- Step 3: プレビュー -->
+<div class="card" id="previewCard" style="display:none">
+  <h2><span class="step-num">3</span>変換結果プレビュー</h2>
+  <p class="info-text">最初の10行を表示しています。横スクロールで全77列を確認できます。</p>
+  <div class="preview-table" id="previewTable"></div>
+</div>
+
+<!-- 仕様メモ -->
+<details>
+  <summary>変換ルールの仕様（クリックで展開）</summary>
+  <div class="spec-list">
+    <dl>
+      <dt>受注コード（1列目）</dt>
+      <dd>uoroku_[受付番号]_[枝番(01〜)]　※同一受付番号内で連番</dd>
+      <dt>受注日付（3列目）</dt>
+      <dd>元データ「更新日時」（20260629 151526形式）を「2026-06-29 15:15:26」に変換</dd>
+      <dt>都道府県の分離（13・14・26・27列目）</dt>
+      <dd>住所文字列の先頭から「北海道」「○○県」「○○府」「○○都」を抽出</dd>
+      <dt>支払方法・配送方法・店舗コード</dt>
+      <dd>支払なし／ヤマト運輸 宅急便／21857（固定）</dd>
+      <dt>のし情報（53列目）</dt>
+      <dd>「のし区分」が0以外の場合のみ、のし関連項目を結合</dd>
+      <dt>マーチャント備考・出荷指示書特記事項・フリー項目</dt>
+      <dd>仕様書に従い、ラベル+値の形式で結合（空欄項目はスキップ）</dd>
+    </dl>
+  </div>
+</details>
+
+</div>
+
+<script>
+// LOGILESS取込用CSVのヘッダー（77列）
+const OUTPUT_HEADERS = [
+  "受注コード", "親受注コード", "受注日付", "入金ステータス", "承認ステータス",
+  "顧客コード", "購入者名1", "購入者名2", "購入者名かな1", "購入者名かな2",
+  "購入者 国", "購入者 郵便番号", "購入者 都道府県", "購入者 住所1", "購入者 住所2",
+  "購入者 住所3", "購入者 電話番号", "購入者 FAX番号", "購入者 メールアドレス",
+  "お届け先名1", "お届け先名2", "お届け先名かな1", "お届け先名かな2", "お届け先 国",
+  "お届け先 郵便番号", "お届け先 都道府県", "お届け先 住所1", "お届け先 住所2", "お届け先 住所3",
+  "お届け先 電話番号", "お届け先 FAX番号", "お届け先 メールアドレス",
+  "ポイント利用", "値引き", "送料", "その他手数料", "税の計算順序", "税の丸め", "伝票の税率",
+  "支払方法", "配送方法", "梱包数", "配送温度", "出荷予定日", "お届け希望日", "お届け希望時間帯",
+  "購入者による備考", "マーチャントによる備考", "出荷指示書 特記事項", "納品書 特記事項",
+  "送り状 特記事項", "ギフトの指定", "熨斗の指定", "ラッピングの指定",
+  "店舗コード", "倉庫ID",
+  "フリー項目1", "フリー項目2", "フリー項目3", "フリー項目4", "フリー項目5",
+  "フリー項目6", "フリー項目7", "フリー項目8", "フリー項目9", "フリー項目10",
+  "定期購入ID", "定期購入 お届け回数", "定期購入 次回お届け予定日",
+  "受注明細コード", "商品コード", "商品名", "明細行備考欄",
+  "販売単価", "税区分", "税率", "数量"
+];
+
+// 都道府県リスト
+const PREFECTURES = [
+  "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
+  "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+  "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
+  "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
+  "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
+  "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
+  "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
+];
+
+// 状態管理
+let sourceData = null;  // [[行1の各列], [行2の各列], ...]
+let convertedData = null;
+
+// DOM要素
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileInfo = document.getElementById('fileInfo');
+const errorBox = document.getElementById('errorBox');
+const convertBtn = document.getElementById('convertBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const statsDiv = document.getElementById('stats');
+const previewCard = document.getElementById('previewCard');
+const previewTable = document.getElementById('previewTable');
+
+// ドラッグ&ドロップ
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragover');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length > 0) {
+    handleFile(e.dataTransfer.files[0]);
+  }
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files.length > 0) handleFile(e.target.files[0]);
+});
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.classList.add('show');
+}
+function clearError() {
+  errorBox.classList.remove('show');
+  errorBox.textContent = '';
+}
+
+function handleFile(file) {
+  clearError();
+  if (!file.name.toLowerCase().endsWith('.csv')) {
+    showError('CSVファイルを選択してください。');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const buffer = new Uint8Array(e.target.result);
+      // Shift-JIS (CP932) として読み込み、UTF-8文字列に変換
+      const codes = new Uint8Array(buffer);
+      const detected = Encoding.detect(codes);
+      const text = Encoding.convert(codes, {
+        to: 'UNICODE',
+        from: 'SJIS',
+        type: 'string'
+      });
+      sourceData = parseCSV(text);
+      if (sourceData.length < 2) {
+        showError('データ行がありません。CSVファイルを確認してください。');
+        return;
+      }
+      fileInfo.innerHTML = `<strong>読み込み完了:</strong> ${file.name}　／　${sourceData.length - 1}行（ヘッダーを除く）`;
+      fileInfo.classList.add('show');
+      convertBtn.disabled = false;
+      downloadBtn.disabled = true;
+      statsDiv.style.display = 'none';
+      previewCard.style.display = 'none';
+    } catch (err) {
+      console.error(err);
+      showError('CSVの読み込みに失敗しました: ' + err.message);
+    }
+  };
+  reader.onerror = () => showError('ファイルの読み込みに失敗しました。');
+  reader.readAsArrayBuffer(file);
+}
+
+// シンプルなCSVパーサー（クォート対応）
+function parseCSV(text) {
+  const rows = [];
+  let cur = '';
+  let row = [];
+  let inQuote = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuote) {
+      if (c === '"') {
+        if (text[i+1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuote = false;
+        }
+      } else {
+        cur += c;
+      }
+    } else {
+      if (c === '"') {
+        inQuote = true;
+      } else if (c === ',') {
+        row.push(cur);
+        cur = '';
+      } else if (c === '\n') {
+        row.push(cur);
+        rows.push(row);
+        row = [];
+        cur = '';
+      } else if (c === '\r') {
+        // 無視
+      } else {
+        cur += c;
+      }
+    }
+  }
+  if (cur !== '' || row.length > 0) {
+    row.push(cur);
+    rows.push(row);
+  }
+  // 空行を除外
+  return rows.filter(r => r.length > 1 || (r.length === 1 && r[0] !== ''));
+}
+
+// 都道府県を抽出
+function extractPrefecture(address) {
+  if (!address) return { pref: '', rest: '' };
+  for (const p of PREFECTURES) {
+    if (address.startsWith(p)) {
+      return { pref: p, rest: address.substring(p.length) };
+    }
+  }
+  return { pref: '', rest: address };
+}
+
+// 更新日時の形式変換: "20260629 151526" → "2026-06-29 15:15:26"
+function formatDateTime(s) {
+  if (!s) return '';
+  const trimmed = s.trim();
+  // "YYYYMMDD HHMMSS" 形式を想定
+  const m = trimmed.match(/^(\d{4})(\d{2})(\d{2})\s+(\d{2})(\d{2})(\d{2})$/);
+  if (m) {
+    return `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}:${m[6]}`;
+  }
+  // "YYYYMMDDHHMMSS" 形式の可能性
+  const m2 = trimmed.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/);
+  if (m2) {
+    return `${m2[1]}-${m2[2]}-${m2[3]} ${m2[4]}:${m2[5]}:${m2[6]}`;
+  }
+  // それ以外はそのまま返す
+  return trimmed;
+}
+
+// 受注日(8列目)の形式変換: "20260611" → "2026-06-11"  ※今回は使わないがユーティリティとして
+function formatDate(s) {
+  if (!s) return '';
+  const trimmed = s.trim();
+  const m = trimmed.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  return trimmed;
+}
+
+// 「ラベル：値」の形式で結合（値が空ならスキップ）。間は改行で区切る。
+function joinLabeledLines(items) {
+  // items: [{label, value}, ...]
+  return items
+    .filter(it => it.value && it.value.trim() !== '')
+    .map(it => `${it.label}${it.value.trim()}`)
+    .join('\n');
+}
+
+// 1行の変換
+function convertRow(srcRow, edaban) {
+  // 元データは1始まりインデックスで仕様書に記載 → JSは0始まりなので-1
+  const col = i => (srcRow[i - 1] || '').trim();
+
+  // 受注コード
+  const uketsuke = col(1);
+  const orderCode = `uoroku_${uketsuke}_${String(edaban).padStart(2, '0')}`;
+
+  // 受注日付（更新日時から）
+  const orderedAt = formatDateTime(col(17));
+
+  // 購入者住所の都道府県分離
+  const buyerAddr1 = col(21);
+  const { pref: buyerPref, rest: buyerRest } = extractPrefecture(buyerAddr1);
+
+  // 購入者 住所3：部署名 + 半角スペース + 肩書名
+  const buyerDept = col(23);
+  const buyerTitle = col(24);
+  let buyerAddr3 = '';
+  if (buyerDept && buyerTitle) {
+    buyerAddr3 = `${buyerDept} ${buyerTitle}`;
+  } else if (buyerDept) {
+    buyerAddr3 = buyerDept;
+  } else if (buyerTitle) {
+    buyerAddr3 = buyerTitle;
+  }
+
+  // お届け先住所の都道府県分離
+  const recipientAddr1 = col(29);
+  const { pref: recipientPref, rest: recipientRest } = extractPrefecture(recipientAddr1);
+
+  // マーチャントによる備考
+  const merchantNote = joinLabeledLines([
+    { label: '備考：', value: col(35) },
+    { label: '追加備考：', value: col(36) }
+  ]);
+
+  // 出荷指示書 特記事項
+  const pickingNotesItems = [];
+  if (col(42)) pickingNotesItems.push(`受注店舗コード:${col(42)}`);
+  // 「受注店名（電話番号、売り場担当：担当者名）」の組み立て
+  const shopName = col(43);
+  const shopTel = col(44);
+  const shopStaff = col(45);
+  if (shopName) {
+    const parts = [];
+    if (shopTel) parts.push(shopTel);
+    if (shopStaff) parts.push(`売り場担当:${shopStaff}`);
+    if (parts.length > 0) {
+      pickingNotesItems.push(`受注店名:${shopName}(${parts.join('、')})`);
+    } else {
+      pickingNotesItems.push(`受注店名:${shopName}`);
+    }
+  }
+  if (col(2)) pickingNotesItems.push(`送り状番号:${col(2)}`);
+  const pickingNotes = pickingNotesItems.join('\n');
+
+  // 熨斗の指定
+  const noshiKbn = col(46);
+  let noshi = '';
+  if (noshiKbn && noshiKbn !== '0') {
+    const parts = [col(47), col(48), col(49), col(50), col(51)].filter(s => s);
+    noshi = parts.join(' ');
+  }
+
+  // フリー項目1: 届け先仕分けコード
+  const free1 = col(34) ? `届け先仕分けコード:${col(34)}` : '';
+
+  // フリー項目2: YTC店所コード / 名 / TEL
+  const free2 = joinLabeledLines([
+    { label: 'YTC店所コード:', value: col(37) },
+    { label: 'YTC店所名:', value: col(38) },
+    { label: 'YTC店所TEL:', value: col(39) }
+  ]);
+
+  // フリー項目3: YTC運賃請求先コード-枝番
+  let free3 = '';
+  if (col(40)) {
+    if (col(41)) {
+      free3 = `YTC運賃請求先コード:${col(40)}-${col(41)}`;
+    } else {
+      free3 = `YTC運賃請求先コード:${col(40)}`;
+    }
+  }
+
+  // フリー項目4: 荷追連携実施 / 産直引取連携フラグ
+  const free4 = joinLabeledLines([
+    { label: '荷追連携実施:', value: col(57) },
+    { label: '産直引取連携フラグ:', value: col(58) }
+  ]);
+
+  // フリー項目5: EDI連携フラグ
+  const free5 = col(59) ? `EDI連携フラグ:${col(59)}` : '';
+
+  // 結果配列（77列）
+  return [
+    orderCode,           // 1: 受注コード
+    '',                  // 2: 親受注コード
+    orderedAt,           // 3: 受注日付
+    '',                  // 4: 入金ステータス
+    '',                  // 5: 承認ステータス
+    '',                  // 6: 顧客コード
+    col(19),             // 7: 購入者名1
+    '',                  // 8: 購入者名2
+    '',                  // 9: 購入者名かな1
+    '',                  // 10: 購入者名かな2
+    '',                  // 11: 購入者 国
+    col(20),             // 12: 購入者 郵便番号
+    buyerPref,           // 13: 購入者 都道府県
+    buyerRest,           // 14: 購入者 住所1
+    col(22),             // 15: 購入者 住所2
+    buyerAddr3,          // 16: 購入者 住所3
+    col(25),             // 17: 購入者 電話番号
+    '',                  // 18: 購入者 FAX番号
+    '',                  // 19: 購入者 メールアドレス
+    col(27),             // 20: お届け先名1
+    '',                  // 21: お届け先名2
+    '',                  // 22: お届け先名かな1
+    '',                  // 23: お届け先名かな2
+    '',                  // 24: お届け先 国
+    col(28),             // 25: お届け先 郵便番号
+    recipientPref,       // 26: お届け先 都道府県
+    recipientRest,       // 27: お届け先 住所1
+    col(30),             // 28: お届け先 住所2
+    '',                  // 29: お届け先 住所3
+    col(33),             // 30: お届け先 電話番号
+    '',                  // 31: お届け先 FAX番号
+    '',                  // 32: お届け先 メールアドレス
+    '',                  // 33: ポイント利用
+    '',                  // 34: 値引き
+    '',                  // 35: 送料
+    '',                  // 36: その他手数料
+    '',                  // 37: 税の計算順序
+    '',                  // 38: 税の丸め
+    '',                  // 39: 伝票の税率
+    '支払なし',          // 40: 支払方法（固定）
+    'ヤマト運輸 宅急便', // 41: 配送方法（固定）
+    '',                  // 42: 梱包数
+    '',                  // 43: 配送温度
+    '',                  // 44: 出荷予定日
+    '',                  // 45: お届け希望日
+    '',                  // 46: お届け希望時間帯
+    '',                  // 47: 購入者による備考
+    merchantNote,        // 48: マーチャントによる備考
+    pickingNotes,        // 49: 出荷指示書 特記事項
+    '',                  // 50: 納品書 特記事項
+    '',                  // 51: 送り状 特記事項
+    '',                  // 52: ギフトの指定
+    noshi,               // 53: 熨斗の指定
+    '',                  // 54: ラッピングの指定
+    '21857',             // 55: 店舗コード（固定）
+    '',                  // 56: 倉庫ID
+    free1,               // 57: フリー項目1
+    free2,               // 58: フリー項目2
+    free3,               // 59: フリー項目3
+    free4,               // 60: フリー項目4
+    free5,               // 61: フリー項目5
+    '',                  // 62: フリー項目6
+    '',                  // 63: フリー項目7
+    '',                  // 64: フリー項目8
+    '',                  // 65: フリー項目9
+    '',                  // 66: フリー項目10
+    '',                  // 67: 定期購入ID
+    '',                  // 68: 定期購入 お届け回数
+    '',                  // 69: 定期購入 次回お届け予定日
+    '',                  // 70: 受注明細コード
+    col(52),             // 71: 商品コード
+    col(53),             // 72: 商品名
+    '',                  // 73: 明細行備考欄
+    col(55),             // 74: 販売単価
+    '',                  // 75: 税区分
+    '',                  // 76: 税率
+    col(54)              // 77: 数量
+  ];
+}
+
+// 変換実行
+convertBtn.addEventListener('click', () => {
+  clearError();
+  try {
+    if (!sourceData || sourceData.length < 2) {
+      showError('元データを読み込んでください。');
+      return;
+    }
+
+    // ヘッダー行をスキップしてデータ行のみ
+    const dataRows = sourceData.slice(1);
+
+    // 受付番号ごとの枝番カウンタ
+    const counters = {};
+    const result = [];
+
+    for (const srcRow of dataRows) {
+      const uketsuke = (srcRow[0] || '').trim();
+      if (!uketsuke) continue;  // 受付番号が空の行はスキップ
+      counters[uketsuke] = (counters[uketsuke] || 0) + 1;
+      const edaban = counters[uketsuke];
+      result.push(convertRow(srcRow, edaban));
+    }
+
+    convertedData = result;
+
+    // 統計を表示
+    const uniqueUketsuke = new Set(dataRows.map(r => (r[0] || '').trim()).filter(s => s));
+    document.getElementById('statSource').textContent = dataRows.length;
+    document.getElementById('statUketsuke').textContent = uniqueUketsuke.size;
+    document.getElementById('statOutput').textContent = result.length;
+    statsDiv.style.display = 'grid';
+
+    // プレビュー
+    showPreview(result);
+
+    downloadBtn.disabled = false;
+  } catch (err) {
+    console.error(err);
+    showError('変換中にエラーが発生しました: ' + err.message);
+  }
+});
+
+function showPreview(rows) {
+  let html = '<table><thead><tr>';
+  for (const h of OUTPUT_HEADERS) {
+    html += `<th>${escapeHtml(h)}</th>`;
+  }
+  html += '</tr></thead><tbody>';
+  const preview = rows.slice(0, 10);
+  for (const row of preview) {
+    html += '<tr>';
+    for (const cell of row) {
+      html += `<td title="${escapeHtml(cell)}">${escapeHtml(cell)}</td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  previewTable.innerHTML = html;
+  previewCard.style.display = 'block';
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/\n/g, '<br>');
+}
+
+// CSV書き出し
+function toCSV(headers, rows) {
+  const escape = v => {
+    const s = v == null ? '' : String(v);
+    // ダブルクォート、カンマ、改行を含む場合はクォートで囲む
+    if (/[",\r\n]/.test(s)) {
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  };
+  const lines = [headers.map(escape).join(',')];
+  for (const row of rows) {
+    lines.push(row.map(escape).join(','));
+  }
+  return lines.join('\r\n');
+}
+
+// ダウンロード
+downloadBtn.addEventListener('click', () => {
+  if (!convertedData) return;
+  const csv = toCSV(OUTPUT_HEADERS, convertedData);
+  // UTF-8 BOM
+  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+  const blob = new Blob([bom, csv], { type: 'text/csv;charset=utf-8' });
+
+  // ファイル名 uoroku_LOGILESS取込_YYYYMMDD-HHMM.csv
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const fname = `uoroku_LOGILESS取込_${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}.csv`;
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+</script>
+</body>
+</html>
